@@ -233,6 +233,120 @@ prop.test(table(student_ds$romantic, student_ds$sex), correct = FALSE)
 
 
 ```
+
+## Chisquare Test
+
+The aim of this section is to test independency between variables.
+```{r}
+## Independency of gender on willingness to pursue higher education
+# Gender influences the desire for a student on whether or not to pursue a higher degree education. This could due to socially perceived roles of gender in the society. 
+
+# p-value = 0.005565
+gender_higher <- table(mat_ds$sex, mat_ds$higher)
+chisq.test (gender_higher)
+
+## Independence of gender on failure rates.
+# Gender was shown not to have an impact on the exam failure rates. 
+
+# P-value = 0.3169
+gender_failure <- table(mat_ds$sex, mat_ds$failures)
+chisq.test (gender_failure)
+
+## Independence of gender on studytime.
+# The result below showed that there is a dependency between study times and gender. This gender gap could be that boys tend to spend less time studying compared to girls and girls feel anxiety from school work more easily and have better disipline at home. Ref: https://www.thestar.com/yourtoronto/education/2015/03/05/boys-do-less-homework-than-girls-global-study-finds.html
+
+#P-value = 5.854*10^-11
+gender_st <- table(mat_ds$sex, mat_ds$studytime)
+chisq.test (gender_st)
+
+
+## Independence of going out frequency on alcohol consumption.
+# A student's alcohol consumption is linked with his/her going out frequency. A person normally tends to drink more as his/her frequency of going out increases. 
+
+#P-value = 3.571*10^-5
+goout_Dalc <- table(mat_ds$goout, mat_ds$Dalc)
+chisq.test(goout_Dalc)
+
+# P-value =  2.2*10^-16
+goout_walc <- table(mat_ds$goout, mat_ds$Walc)
+chisq.test(goout_walc)
+
+## Independence of free time on going out frequency.
+# Going out frequency is dependent on the amount of free time a student has. Generally speaking, the more free time a person has, the more often this person hangs out with friends or socialises with people.
+# P-value = 1.156*10^-10 
+freetime_goout <- table( mat_ds$freetime, mat_ds$goout)
+chisq.test(freetime_goout)
+
+## Independence of parents' jobs on the paid activities a student take.
+# Paid activities are dependent on mother's jobs but independent of father's jobs. The reason being could be that mothers are naturally more devoted to the children's development.
+
+#P-value = 0.01211
+Mjob_paid <- table(mat_ds$Mjob, mat_ds$paid)
+chisq.test(Mjob_paid)
+
+#P-value = 0.4754
+Fjob_paid <- table(mat_ds$Fjob, mat_ds$paid)
+chisq.test(Fjob_paid)
+
+## Independence of paid activities on failure rates.
+# Whether or not a student takes extra paid classes affects his/her exam failure rate. The more extra paid classes a student receives, the better scores he/she achieves and the less chance of failing an exam.
+
+# P-value = 0.0003407
+paid_failure <- table(mat_ds$failures, mat_ds$paid)
+chisq.test(paid_failure)
+
+## Independence of parents' education on a student's desire to pursue higher education. 
+# It was found that higher education is associated with parents' education backgrounds. This could be explained by the fact that parents' education levels dictate their expectations of their offsprings. Students generally take their parents as their role models and pursue the same or if not higher education as compared to their parents.
+Medu_higher <- table(mat_ds$Medu, mat_ds$higher)
+chisq.test(Medu_higher)
+
+# P-value = 0.006636
+Fedu_higher <- table(mat_ds$Fedu, mat_ds$higher)
+chisq.test(Fedu_higher)
+
+## Independence of acohol consumption on health.
+# The chi-square results showed that a student's health is independent of his/her acohol consumption. This surprising result could be due to the fact that the samples were taken from young students age 16 to 18. The long term effects from acohol on health was not yet shown.
+
+# P-value = 0.1564
+acohol_health <- table(mat_ds$Dalc, mat_ds$health)
+chisq.test(acohol_health)
+
+# p-value = 0.2894
+walc_health <- table(mat_ds$Walc, mat_ds$health)
+chisq.test(walc_health)
+
+## Independence of guardian on health.
+# The result below showed that a student's guardian influences his/her health. Possible explainations could be that mothers for example can care for their children's health better than others due to mothers' nurturing nature.
+
+# P-value = 0.004591
+guardian_health <- table(mat_ds$guardian, mat_ds$health)
+chisq.test(guardian_health)
+
+## Independence of traveltime on failure rates.
+# Travel time to school was proved to have an effect on a student's failure rate. This could be due to the fact that longer travelling time to school may cause lateness or poorer concentration in class which would in turn affect a student's academic performance. 
+
+# P-value = 0.01211
+traveltime_failure <- table(mat_ds$failures, mat_ds$traveltime)
+chisq.test (traveltime_failure)
+
+## Independence of romantic relationships on study time.
+# The results suggested that being in a romantic relationship can affect the amount of time a student spend on studying. This might be due to the fact that Students in a relationship are more likely to be distracted from school work or lose intersts in class. 
+# P-value = 0.01368
+romantic_studytime <- table(mat_ds$romantic, mat_ds$studytime)
+chisq.test(romantic_studytime)
+
+## Independence of romantic relationships on failure rates.
+# Wether or not a student's involvement in a romantic relationship was shown to an impact on his/her academic achievement/failure rates. This could be because being in a romatic relationship could lead to spending less time in studying or lose focus in school work and hence underachievement in exams.
+
+# P-value = 0.02365
+romantic_failure <- table(mat_ds$romantic, mat_ds$failures)
+chisq.test(romantic_failure)
+
+```
+
+
+
+
 Difference in score for mat_ds(math) is insignificant, but significant for por_ds(portugese)
 
 ## Some quick ANOVA
