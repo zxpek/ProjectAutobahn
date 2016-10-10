@@ -12,6 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Load data
 
 
+## Overarching Question
+What demographic, social, and school related variables affect test scores in a high school environment? Do these factors differ in a math versus as language class?
+
 ```{r}
 library(ggplot2)
 d1=read.csv("student/student-mat.csv",header=TRUE)
@@ -71,11 +74,11 @@ d2$sexD <- d2$sex
 levels(d2$sexD) <- c(0, 1)
 d2$sexD <- as.numeric(as.character(d2$sexD))
 
-install.packages('reshape')
 correlations <- cor(d2[,unlist(lapply(d2, is.numeric))])
 library(reshape)
 melted_cormat <- melt(correlations)
-ggplot(melted_cormat, aes(x = Var1, y = Var2, fill = value)) + geom_tile()
+melted_cormat
+ggplot(melted_cormat, aes(x = X1, y = X2, fill = value)) + geom_tile()
 ```
 
 
@@ -85,11 +88,8 @@ ggplot(melted_cormat, aes(x = Var1, y = Var2, fill = value)) + geom_tile()
 library(plyr)
 round(prop.table(table(d2$sex,d2$school),margin = 2),2)
 
-ddply(d2, .(school,sex), summarize, mean = mean(G3))
+ddply(d2, .(school), summarize, mean = mean(G3), sd = sd(G3))
 
-ggplot(d2) + geom_boxplot(aes(x = school, y = G3))
-
-cor(d2)
 
 ```
 
@@ -135,7 +135,7 @@ d2$scoreDiff2<-d2$G3-d2$G2
 d2$scoreDiff1<-d2$G2-d2$G1
 
 t.test(d1$G1,d1$G2,paired=TRUE)
-t.test(d1$G1,d1$G2,paired=TRUE)
+t.test(d2$G1,d2$G2,paired=TRUE)
 
 ```
 Difference in score for d1(math) is insignificant, but significant for d2(portugese)
@@ -162,8 +162,8 @@ d1.sub<-as.data.frame(d1[,c(7,8,26,27,28,30,31,32,33)])
 d1.sub<-as.data.frame(d1[,nonFactors])
 d1.pca<-prcomp(d1.sub,scale=TRUE,center=TRUE)
 
-pairs(as.matrix(d1.sub)%*%as.matrix(d1.pca$rotation)[,1:7],col=d1$internet)
-
+pairs(as.matrix(d1.sub)%*%as.matrix(d1.pca$rotation)[,1:7],col=d1$traveltime)
+d1.pca$rotation
 ```
 
 I've tried looking for some nice relationships here, nothing so far, will keep looking. Not optimistic.

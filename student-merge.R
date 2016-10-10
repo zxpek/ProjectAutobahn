@@ -14,8 +14,8 @@
 
 library(ggplot2)
 # MA: Change variable names
-mat_ds <- read.csv("data/student-mat.csv", header=TRUE)
-por_ds <- read.table("data/student-por.csv", sep=";", header=TRUE)
+mat_ds <- read.csv("student/student-mat.csv", header=TRUE)
+por_ds <- read.table("student/student-por.csv", sep=";", header=TRUE)
 
 # MA: Print first 10 rows of each data set
 head(mat_ds, n = 10)
@@ -85,8 +85,12 @@ f_grade <- mean(student_ds[student_ds[,"sex"] == "F", "G3"])
 # Average grade of male students
 m_grade <- mean(student_ds[student_ds[,"sex"] == "M", "G3"])
 # 11.20309
+#do a t.test between male and female grades.
+# t.test between the two schoools. 
+
 # Difference between female and male proportions with respect to certain characteristics
-prop.test(table(student_ds$activities, student_ds$sex), correct = FALSE)
+prop.test(table(student_ds$sex, student_ds$activities), correct = FALSE)
+#prop test make sure the y/n is on the columns
 prop.test(table(student_ds$nursery, student_ds$sex), correct = FALSE)
 prop.test(table(student_ds$higher, student_ds$sex), correct = FALSE)
 prop.test(table(student_ds$internet, student_ds$sex), correct = FALSE)
