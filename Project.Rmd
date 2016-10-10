@@ -74,14 +74,77 @@ G3  | Final Grade  | Numeric: from 1 to 20
 
 ## Convert Factors to Numeric
 ```{r}
+por_ds$observationID <- seq.int(nrow(por_ds))
+
 por_ds$schoolD <- por_ds$school
-levels(por_ds$schoolD) <- c(0, 1)
+levels(por_ds$schoolD) <- c(0, 1) # 0 is GP, 1 is MS
 por_ds$schoolD <- as.numeric(as.character(por_ds$schoolD))
 
 por_ds$sexD <- por_ds$sex
-levels(por_ds$sexD) <- c(0, 1)
+levels(por_ds$sexD) <- c(0, 1) #0 is female, 1 is male
 por_ds$sexD <- as.numeric(as.character(por_ds$sexD))
 
+por_ds$addressD <- por_ds$address
+levels(por_ds$addressD) <- c(0, 1) #0 is urban, 1 is rural
+por_ds$addressD <- as.numeric(as.character(por_ds$addressD))
+
+por_ds$famsizeD <- por_ds$famsize
+levels(por_ds$famsizeD) <- c(0, 1) #0 is less than 3, 1 is greater than 3
+por_ds$famsizeD <- as.numeric(as.character(por_ds$famsizeD))
+
+por_ds$PstatusD <- por_ds$Pstatus
+levels(por_ds$PstatusD) <- c(0, 1) #0 is together, 1 is apart
+por_ds$PstatusD <- as.numeric(as.character(por_ds$PstatusD))
+
+por_ds$schoolsupD <- por_ds$schoolsup
+levels(por_ds$schoolsupD) <- c(0, 1)
+por_ds$schoolsupD <- as.numeric(as.character(por_ds$schoolsupD))
+
+por_ds$nurseryD <- por_ds$nursery
+levels(por_ds$nurseryD) <- c(0, 1) #0 is yes, 1 is no
+por_ds$nurseryD <- as.numeric(as.character(por_ds$nurseryD))
+
+por_ds$activitiesD <- por_ds$activities
+levels(por_ds$activitiesD) <- c(0, 1) #0 is female, 1 is male
+por_ds$activitiesD <- as.numeric(as.character(por_ds$activitiesD))
+
+por_ds$higherD <- por_ds$higher
+levels(por_ds$higherD) <- c(0, 1) #0 is female, 1 is male
+por_ds$higherD <- as.numeric(as.character(por_ds$higherD))
+
+por_ds$romanticD <- por_ds$romantic
+levels(por_ds$romanticD) <- c(0, 1) #0 is female, 1 is male
+por_ds$romanticD <- as.numeric(as.character(por_ds$romanticD))
+
+por_ds$famsupD <- por_ds$famsup
+levels(por_ds$famsupD) <- c(0, 1) #0 is female, 1 is male
+por_ds$famsupD <- as.numeric(as.character(por_ds$famsupD))
+
+por_ds$paidD <- por_ds$paid
+levels(por_ds$paidD) <- c(0, 1) #0 is female, 1 is male
+por_ds$paidD <- as.numeric(as.character(por_ds$paidD))
+
+por_ds$internetD <- por_ds$internet
+levels(por_ds$internetD) <- c(0, 1) #0 is female, 1 is male
+por_ds$internetD <- as.numeric(as.character(por_ds$internetD))
+
+
+mjob <- factor(por_ds$Mjob)
+mjobD <- data.frame(model.matrix(~mjob-1))
+mjobD$observationID <- seq.int(nrow(mjobD))
+fjob <- factor(por_ds$Fjob)
+fjobD <- data.frame(model.matrix(~fjob-1))
+fjobD$observationID <- seq.int(nrow(fjobD))
+reason <- factor(por_ds$reason)
+reasonD <- data.frame(model.matrix(~reason-1))
+reasonD$observationID <- seq.int(nrow(reasonD))
+guardian <- factor(por_ds$guardian)
+guardianD <- data.frame(model.matrix(~guardian-1))
+guardianD$observationID <- seq.int(nrow(guardianD))
+por_ds <- merge(por_ds, mjobD, by = "observationID")
+por_ds <- merge(por_ds, fjobD, by = "observationID")
+por_ds <- merge(por_ds, reasonD, by = "observationID")
+por_ds <- merge(por_ds, guardianD, by = "observationID")
 
 ```
 
@@ -119,17 +182,15 @@ m_grade <- mean(student_ds[student_ds[,"sex"] == "M", "G3"])
 You'll need the package GGally for this
 
 ```{r}
-nonFactors<- c(3,7,8,13,14,15,24,25,26,27,28,29,30,31,32,33) #List of nonfactor columns
-pairs(mat_ds[,c(30,31,32,33)],col=mat_ds$Fedu)
-
-mat_ds.sub<-as.data.frame(mat_ds[,c(30,31,32,33,7,8)])
-#ggpairs(mat_ds.sub)
-
 correlations <- cor(por_ds[,unlist(lapply(por_ds, is.numeric))])
-
+correlations
 melted_cormat <- melt(correlations)
 melted_cormat
-ggplot(melted_cormat, aes(x = X1, y = X2, fill = value)) + geom_tile()
+ggplot(melted_cormat, aes(x = X1, y = X2, fill = value)) + geom_tile() + scale_fill_gradient(low = 'white', high = 'red')
+
+highly_correlated <- melted_cormat[melted_cormat$value > .3, ]
+highly_correlated <- highly_correlated[highly_correlated$value < 1 , ]
+highly_correlated #list of all correlations above .3
 ```
 
 ## All pairwise correlations
