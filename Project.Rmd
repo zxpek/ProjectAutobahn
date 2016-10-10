@@ -2,7 +2,7 @@
 title: "Student Scores"
 author: "Group 4"
 date: "9 October 2016"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -14,13 +14,86 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(ggplot2)
-d1=read.csv("student-mat.csv",header=TRUE)
-d2=read.table("student-por.csv",sep=";",header=TRUE)
+d1=read.csv("student/student-mat.csv",header=TRUE)
+d2=read.table("student/student-por.csv",sep=";",header=TRUE)
 
 #uhh guys there's 386 students in both datasets so the rbind didn't exactly work
 d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
 print(nrow(d3))
 ```
+
+## Dataset Description
+The dataset contains 32 Variables. Most variables are categorical across a number of factors that attempt to predict end of the semester scores.
+
+Variable  | Description | Type | Contents 
+--------------|--------------|---------
+School      | Student's school | Binary: "GP" - Gabriel Pereira or "MS" - Mousinho da Silveira  
+Sex         | Student's sex | Binary: "F" - female or "M" - male  
+Age         | Student's age | Numeric: from 15 to 22  
+Address     | Student's home address type | Binary: "U" - urban or "R" - rural  
+Famsize     | Family size | Binary: "LE3" - less or equal to 3 or "GT3" - greater than 3  
+Pstatus     | Parent's cohabitation status | Binary: "T" - living together or "A" - apart  
+Medu        | Mother's education | Categorical: 0 - none,  1 - primary education, 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education  
+Fedu        | Father's education | Categorical: 0 - none,  1 - primary education, 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)  
+Mjob        | Mother's job | Nominal: "teacher", "health" care related, civil "services" (e.g. administrative or police), "at_home" or "other"  
+Fjob        | Father's job | Nominal: "teacher", "health" care related, civil "services" (e.g. administrative or police), "at_home" or "other"  
+Reason      | Reason to choose this school | Categorical: close to "home", school "reputation", "course" preference or "other")  
+Guardian    | Student's guardian | Categorical: "mother", "father" or "other"  
+Traveltime  | Home to school travel time | Categorical: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour  
+Studytime   | Weekly study time | Categorical: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours  
+Failures    | Number of past class failures | Categorical: n if 1<=n<3, else 4  
+Schoolsup   | Extra educational support provided by school| Binary: yes or no  
+Famsup      | Family educational support | Binary: yes or no  
+Paid        | Extra paid classes within the course subject (Math or Portuguese) | Binary: yes or no  
+Activities  | Extra-curricular activities | Binary: yes or no  
+Nursery     | Attended nursery school as a child | Binary: yes or no  
+Higher      | Students wants to attend higher education | Binary: yes or no  
+Internet    | Internet access at home | Binary: yes or no  
+Romantic    | Student pursuing romantic relationship | Binary: yes or no  
+Famrel      | Quality of family relationships | Categorical: from 1 - very bad to 5 - excellent  
+Freetime    | Free time after school | Categorical: from 1 - very low to 5 - very high  
+Goout       | Frequency of going out with friends | Categorical: from 1 - very low to 5 - very high  
+Dalc        | Workday alcohol consumption | Categorical: from 1 - very low to 5 - very high  
+Walc        | Weekend alcohol consumption | Categorical: from 1 - very low to 5 - very high  
+Health      | Current health status | Categorical : from 1 - very bad to 5 - very good  
+Absences    | Number of school absences | Numeric: from 0 to 93  
+G1  | First Period Grade | Numeric: from 1 to 20
+G2  | Second Period Grade | Numeric: from 1 to 20
+G3  | Final Grade  | Numeric: from 1 to 20
+
+## Convert Factors to Numeric
+```{r}
+d2$schoolD <- d2$school
+levels(d2$schoolD) <- c(0, 1)
+d2$schoolD <- as.numeric(as.character(d2$schoolD))
+
+d2$sexD <- d2$sex
+levels(d2$sexD) <- c(0, 1)
+d2$sexD <- as.numeric(as.character(d2$sexD))
+
+install.packages('reshape')
+correlations <- cor(d2[,unlist(lapply(d2, is.numeric))])
+library(reshape)
+melted_cormat <- melt(correlations)
+ggplot(melted_cormat, aes(x = Var1, y = Var2, fill = value)) + geom_tile()
+```
+
+
+## Descriptive Statistics
+```{r}
+#slice data in different ways
+library(plyr)
+round(prop.table(table(d2$sex,d2$school),margin = 2),2)
+
+ddply(d2, .(school,sex), summarize, mean = mean(G3))
+
+ggplot(d2) + geom_boxplot(aes(x = school, y = G3))
+
+cor(d2)
+
+```
+
+
 
 ## Quick pairs plots
 
@@ -31,7 +104,7 @@ nonFactors<- c(3,7,8,13,14,15,24,25,26,27,28,29,30,31,32,33) #List of nonfactor 
 pairs(d1[,c(30,31,32,33)],col=d1$Fedu)
 
 d1.sub<-as.data.frame(d1[,c(30,31,32,33,7,8)])
-ggpairs(d1.sub)
+#ggpairs(d1.sub)
 ```
 
 ## All pairwise correlations
