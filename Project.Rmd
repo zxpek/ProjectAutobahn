@@ -1,0 +1,96 @@
+---
+title: "Student Scores"
+author: "Group 4"
+date: "9 October 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load data
+
+
+```{r}
+library(ggplot2)
+d1=read.csv("student-mat.csv",header=TRUE)
+d2=read.table("student-por.csv",sep=";",header=TRUE)
+
+#uhh guys there's 386 students in both datasets so the rbind didn't exactly work
+d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+print(nrow(d3))
+```
+
+## Quick pairs plots
+
+You'll need the package GGally for this
+
+```{r}
+nonFactors<- c(3,7,8,13,14,15,24,25,26,27,28,29,30,31,32,33) #List of nonfactor columns
+pairs(d1[,c(30,31,32,33)],col=d1$Fedu)
+
+d1.sub<-as.data.frame(d1[,c(30,31,32,33,7,8)])
+ggpairs(d1.sub)
+```
+
+## All pairwise correlations
+
+```{r}
+cor.vec<-matrix(nrow=dim(d1)[2],ncol=dim(d1)[2])
+for (i in 1:dim(d1)[2]) {
+  for (j in 1:dim(d1)[2]) {
+    if (i != j) {
+      cor.vec[i,j] <- as.numeric(try(cor(d1[,i],d1[,j]),silent=TRUE)) 
+    }
+  }
+}
+
+which(abs(cor.vec) > 0.4, arr.ind=TRUE)
+
+```
+
+##Paired t-tests
+
+```{r}
+d1$avgScore<-rowMeans(cbind(d1$G1,d1$G2,d1$G3))
+
+d1$scoreDiff2<-d1$G3-d1$G2
+d1$scoreDiff1<-d1$G2-d1$G1
+
+d2$scoreDiff2<-d2$G3-d2$G2
+d2$scoreDiff1<-d2$G2-d2$G1
+
+t.test(d1$G1,d1$G2,paired=TRUE)
+t.test(d1$G1,d1$G2,paired=TRUE)
+
+```
+Difference in score for d1(math) is insignificant, but significant for d2(portugese)
+
+## Some quick ANOVA
+
+Just to explore a bit further
+
+```{r}
+Edu.aov<-aov(d1$avgScore ~ d1$Fedu + d1$Medu)
+Alc.aov<-aov(d1$avgScore ~ d1$Walc + d1$Dalc)
+Job.aov<-aov(d1$avgScore ~ d1$Mjob + d1$Fjob)
+summary(aov(d1$avgScore ~ factor(d1$studytime)))
+ggplot(data=d1,aes(factor(Mjob),G1))+geom_boxplot()
+plot(jitter(d1$G1),jitter(d1$G2),col=c(d1$Mjob=="health")+1)
+```
+
+
+## PCA
+
+```{r}
+d1.sub<-as.data.frame(d1[,c(7,8,26,27,28,30,31,32,33)])
+
+d1.sub<-as.data.frame(d1[,nonFactors])
+d1.pca<-prcomp(d1.sub,scale=TRUE,center=TRUE)
+
+pairs(as.matrix(d1.sub)%*%as.matrix(d1.pca$rotation)[,1:7],col=d1$internet)
+
+```
+
+I've tried looking for some nice relationships here, nothing so far, will keep looking. Not optimistic.
