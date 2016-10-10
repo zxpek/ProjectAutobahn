@@ -151,16 +151,14 @@ which(abs(cor.vec) > 0.4, arr.ind=TRUE)
 ##Paired t-tests
 
 ```{r}
-mat_ds$avgScore<-rowMeans(cbind(mat_ds$G1,mat_ds$G2,mat_ds$G3))
+t.test(mat_ds$G1,mat_ds$G2,paired=TRUE) #Checking for improvement in score
+t.test(por_ds$G1,por_ds$G2,paired=TRUE) 
 
-mat_ds$scoreDiff2<-mat_ds$G3-mat_ds$G2
-mat_ds$scoreDiff1<-mat_ds$G2-mat_ds$G1
+#Checks that scores increase similarly across tests (Difference in score between G2 and G1)
+mat_ds$scoreDiff1<-mat_ds$G2 - mat_ds$G1
+por_ds$scoreDiff1<-por_ds$G2 - por_ds$G1
+t.test(mat_ds$scoreDiff1,mat_ds$scoreDiff1)
 
-por_ds$scoreDiff2<-por_ds$G3-por_ds$G2
-por_ds$scoreDiff1<-por_ds$G2-por_ds$G1
-
-t.test(mat_ds$G1,mat_ds$G2,paired=TRUE)
-t.test(por_ds$G1,por_ds$G2,paired=TRUE)
 
 #do a t.test between male and female grades.
 # t.test between the two schoools. 
@@ -181,12 +179,11 @@ Difference in score for mat_ds(math) is insignificant, but significant for por_d
 Just to explore a bit further
 
 ```{r}
-Edu.aov<-aov(mat_ds$avgScore ~ mat_ds$Fedu + mat_ds$Medu)
-Alc.aov<-aov(mat_ds$avgScore ~ mat_ds$Walc + mat_ds$Dalc)
-Job.aov<-aov(mat_ds$avgScore ~ mat_ds$Mjob + mat_ds$Fjob)
-summary(aov(mat_ds$avgScore ~ factor(mat_ds$studytime)))
-ggplot(data=mat_ds,aes(factor(Mjob),G1))+geom_boxplot()
-plot(jitter(mat_ds$G1),jitter(mat_ds$G2),col=c(mat_ds$Mjob=="health")+1)
+Edu.aov<-aov(mat_ds$G3 ~ mat_ds$Fedu + mat_ds$Medu)
+Alc.aov<-aov(mat_ds$G3 ~ mat_ds$Walc + mat_ds$Dalc)
+Job.aov<-aov(mat_ds$G3 ~ mat_ds$Mjob + mat_ds$Fjob)
+summary(aov(mat_ds$G3 ~ factor(mat_ds$studytime)))
+ggplot(data=mat_ds,aes(factor(Mjob),G3))+geom_boxplot()
 ```
 
 
