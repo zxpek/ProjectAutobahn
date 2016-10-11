@@ -216,7 +216,7 @@ prop.test(table(student_ds$romantic, student_ds$sex), correct = FALSE)
 
 ```
 
-## Chisquare Test
+## $\chi^2$ Tests
 
 The aim of this section is to test independency between variables.
 ```{r}
