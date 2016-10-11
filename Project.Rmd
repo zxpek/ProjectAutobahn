@@ -204,6 +204,101 @@ t.test(mat_ds$scoreDiff1,mat_ds$scoreDiff1)
 
 
 #do a t.test between male and female grades.
+mal_matds<-subset(mat_ds, sex == "M" & G3 > 0) #subset male student with no 0 final grade in math
+fem_matds<-subset(mat_ds, sex == "F" & G3 > 0) #subset female student with no 0 final grade in math
+t.test(mal_matds[,"G3"], fem_matds[,"G3"])
+
+mal_pords<-subset(por_ds, sex == "M" & G3 > 0) #subset male student with no 0 final grade in por
+fem_pords<-subset(por_ds, sex == "F" & G3 > 0) #subset female student with no 0 final grade in por
+t.test(mal_pords[,"G3"], fem_pords[,"G3"])
+#female student has higher mean for por, while male student has higher mean for math
+
+#do a t.test between famsize
+GF_matds<-subset(mat_ds, famsize == "GT3" & G3 > 0) #subset greater famsize with no 0 final grade in math
+LF_matds<-subset(mat_ds, famsize == "LE3" & G3 > 0) #subset less famsize with no 0 final grade in math
+t.test(GF_matds[,"G3"], LF_matds[,"G3"])
+
+GF_pords<-subset(por_ds, famsize == "GT3" & G3 > 0) #subset greater famsize with no 0 final grade in por
+LF_pords<-subset(por_ds, famsize == "LE3" & G3 > 0) #subset less famsize with no 0 final grade in por
+t.test(GF_pords[,"G3"], LF_pords[,"G3"])
+#no diff in mean between large family and small family for both math class and por class
+
+#do a t.test between mother and father as guardian
+MG_matds<-subset(mat_ds, guardian == "mother" & G3 > 0) #subset mother as guardian with no 0 final grade in math
+FG_matds<-subset(mat_ds, guardian == "father" & G3 > 0) #subset father as guardian with no 0 final grade in math
+t.test(MG_matds[,"G3"], FG_matds[,"G3"])
+
+MG_pords<-subset(por_ds, guardian == "mother" & G3 > 0) #subset mother as guardian with no 0 final grade in por
+FG_pords<-subset(por_ds, guardian == "father" & G3 > 0) #subset father as guardian with no 0 final grade in por
+t.test(MG_pords[,"G3"], FG_pords[,"G3"])
+#no sig diff in mean for both math class and por class
+
+#do a t.test in grade between having extra paid classes and not
+paid_matds<-subset(mat_ds, paid == "yes" & G3 > 0) #subset paid extra class with no 0 final grade in math
+npaid_matds<-subset(mat_ds, paid == "no" & G3 > 0) #subset no paid extra class with no 0 final grade in math
+t.test(paid_matds[,"G3"], npaid_matds[,"G3"])
+
+paid_pords<-subset(por_ds, paid == "yes" & G3 > 0) #subset paid extra class with no 0 final grade in por
+npaid_pords<-subset(por_ds, paid == "no" & G3 > 0) #subset no paid extra class with no 0 final grade in por
+t.test(paid_pords[,"G3"], npaid_pords[,"G3"])
+#no diff in mean for both math class and por class
+
+#do a t.test in grade between having internet and not
+int_matds<-subset(mat_ds, internet == "yes" & G3 > 0) #subset have internet with no 0 final grade in math
+nint_matds<-subset(mat_ds, internet == "no" & G3 > 0) #subset do not have internet with no 0 final grade in math
+t.test(int_matds[,"G3"], nint_matds[,"G3"])
+
+int_pords<-subset(por_ds, internet == "yes" & G3 > 0) #subset have internet with no 0 final grade in por
+nint_pords<-subset(por_ds, internet == "no" & G3 > 0) #subset do not have internet with no 0 final grade in por
+t.test(int_pords[,"G3"], nint_pords[,"G3"])
+#grades mean is not the same for both math and por, but esp.por.
+#so far, what we have: male wins in math class (insignificant), female wins in por class. Check proporsion of male and female internet usage for por class.What test should i use??
+
+summary(fem_pords[,"internet"])
+summary(mal_pords[,"internet"])
+#the proporsion shows that internet usage does not correlate directly with higher grade in por for female 
+
+#do a t.test in grade between good family relation and worse
+frg_matds<-subset(mat_ds, famrel > 3 & G3 > 0) #subset greater famsize with no 0 final grade in math
+frb_matds<-subset(mat_ds, famrel <= 3 & G3 > 0) #subset less famsize with no 0 final grade in math
+t.test(frg_matds[,"G3"], frb_matds[,"G3"])
+
+frg_pords<-subset(por_ds, famrel > 3 & G3 > 0) #subset greater famsize with no 0 final grade in math
+frb_pords<-subset(por_ds, famrel <= 3 & G3 > 0) #subset less famsize with no 0 final grade in math
+t.test(frg_pords[,"G3"], frb_pords[,"G3"])
+#grades mean is not the same for por, but relatively the same for math (why??)
+
+#do a t.test in grade between students living in rural area and urban
+ua_matds<-subset(mat_ds, address =="U" & G3 > 0) #subset urban with no 0 final grade in math
+ra_matds<-subset(mat_ds, address =="R" & G3 > 0) #subset rural with no 0 final grade in math
+t.test(ua_matds[,"G3"], ra_matds[,"G3"])
+
+ua_pords<-subset(por_ds, address =="U" & G3 > 0) #subset urban with no 0 final grade in por
+ra_pords<-subset(por_ds, address =="R" & G3 > 0) #subset rural with no 0 final grade in por
+t.test(ua_pords[,"G3"], ra_pords[,"G3"])
+#grades mean is not equal to 0 for both math and por, students live in the urban area get higher grades in average
+
+#do a t.test in grade between different travel time. Less and equal to 30 minutes is considered nearby, more than 30 minutes is considered far
+nb_matds<-subset(mat_ds, traveltime <= 3 & G3 > 0) #subset live nearby with no 0 final grade in math
+fa_matds<-subset(mat_ds, traveltime >3 & G3 > 0) #subset live far away with no 0 final grade in math
+t.test(nb_matds[,"G3"], fa_matds[,"G3"])
+
+nb_pords<-subset(por_ds, traveltime <= 3 & G3 > 0) #subset live nearby with no 0 final grade in por
+fa_pords<-subset(por_ds, traveltime >3 & G3 > 0) #subset live far away no 0 final grade in por
+t.test(nb_pords[,"G3"], fa_pords[,"G3"])
+#grades mean is not equal to 0 for both math and por, students live nearby area get higher grades in average
+
+#do a t.test in grade between study time. Less and equal to 5 minutes/week is considered less, more than 5 hours is considered more.
+ls_matds<-subset(mat_ds, studytime <= 2 & G3 > 0) #subset less study time with no 0 final grade in math
+ms_matds<-subset(mat_ds, studytime >2 & G3 > 0) #subset more study time far away with no 0 final grade in math
+t.test(ls_matds[,"G3"], ms_matds[,"G3"])
+
+ls_pords<-subset(por_ds, studytime <= 2 & G3 > 0) #subset less study time with no 0 final grade in por
+ms_pords<-subset(por_ds, studytime >2 & G3 > 0) #subset more study time far away with no 0 final grade in por
+t.test(ls_pords[,"G3"], ms_pords[,"G3"])
+#grades mean is not equal to 0 for both math and por, students study more than 5 hours a week get higher grades in average
+
+
 # t.test between the two schoools. 
 # Difference between female and male proportions with respect to certain characteristics
 prop.test(table(student_ds$sex, student_ds$activities), correct = FALSE)
