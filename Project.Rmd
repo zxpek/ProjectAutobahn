@@ -179,8 +179,6 @@ m_grade <- mean(student_ds[student_ds[,"sex"] == "M", "G3"])
 
 ## Correlations
 
-You'll need the package GGally for this
-
 ```{r}
 correlations <- cor(por_ds[,unlist(lapply(por_ds, is.numeric))])
 correlations
@@ -191,22 +189,6 @@ ggplot(melted_cormat, aes(x = X1, y = X2, fill = value)) + geom_tile() + scale_f
 highly_correlated <- melted_cormat[melted_cormat$value > .3, ]
 highly_correlated <- highly_correlated[highly_correlated$value < 1 , ]
 highly_correlated #list of all correlations above .3
-```
-
-## All pairwise correlations
-
-```{r}
-cor.vec<-matrix(nrow=dim(mat_ds)[2],ncol=dim(mat_ds)[2])
-for (i in 1:dim(mat_ds)[2]) {
-  for (j in 1:dim(mat_ds)[2]) {
-    if (i != j) {
-      cor.vec[i,j] <- as.numeric(try(cor(mat_ds[,i],mat_ds[,j]),silent=TRUE)) 
-    }
-  }
-}
-
-which(abs(cor.vec) > 0.4, arr.ind=TRUE)
-
 ```
 
 ##Paired t-tests
@@ -345,34 +327,97 @@ chisq.test(romantic_failure)
 ```
 
 
-
-
 Difference in score for mat_ds(math) is insignificant, but significant for por_ds(portugese)
 
-## Some quick ANOVA
+## Principal Component Analysis
 
-Just to explore a bit further
-
-```{r}
-Edu.aov<-aov(mat_ds$G3 ~ mat_ds$Fedu + mat_ds$Medu)
-Alc.aov<-aov(mat_ds$G3 ~ mat_ds$Walc + mat_ds$Dalc)
-Job.aov<-aov(mat_ds$G3 ~ mat_ds$Mjob + mat_ds$Fjob)
-summary(aov(mat_ds$G3 ~ factor(mat_ds$studytime)))
-ggplot(data=mat_ds,aes(factor(Mjob),G3))+geom_boxplot()
-```
-
-
-## PCA
+To explore the data from another angle, we do a Principal Component Analysis on the non-categorical data age, absences and final year score.
 
 ```{r}
-mat_ds.sub<-as.data.frame(mat_ds[,c(7,8,26,27,28,30,31,32,33)])
+mat_ds.sub<-as.data.frame(mat_ds[,c(3,30,33)])
 
-mat_ds.sub<-as.data.frame(mat_ds[,nonFactors])
 mat_ds.pca<-prcomp(mat_ds.sub,scale=TRUE,center=TRUE)
 
-pairs(as.matrix(mat_ds.sub)%*%as.matrix(mat_ds.pca$rotation)[,1:7],col=mat_ds$traveltime)
+pairs(as.matrix(mat_ds.sub)%*%as.matrix(mat_ds.pca$rotation),col=c(mat_ds$romantic)+1)
 mat_ds.pca$rotation
 ```
+
+Examining the coefficients for the first two PCAs, we see that age captures the most variability in these three variables. Note that we have scaled and centered the data, so the larger range of age has no effect.
+
+We create a plot of the three PCAs in 2 dimensions. Students in romantic relationships are coloured green, those who are not are coloured red. From looking at the plot between the first two principal components, we notice that students who are in a romantic relationship tend to have a higher score in these principal components. By looking at the breakdown of the principal components, students who have a higher age and absences have a higher score in PC1, while a high score in absences and final year score would give a high PC2.
+
+From this, we suspect that students in relationships tend to be older, and are absent more often. Notice alsom that a the final year score has a negative weight. This means that the lower the value of a student's final year score, the higher PC1 will be. We suspect that students in romantic relationships would score lower on the Math test.
+
+
+```{r}
+por_ds.sub<-as.data.frame(por_ds[,c(3,30,33)])
+
+por_ds.pca<-prcomp(por_ds.sub,scale=TRUE,center=TRUE)
+
+pairs(as.matrix(por_ds.sub)%*%as.matrix(por_ds.pca$rotation),col=c(por_ds$romantic)+1)
+por_ds.pca$rotation
+
+```
+
+For the portugese scores, we find a very similar result. Examining the coefficients of PC1, we see that it is almost the same as the first PC in the math data, albeit with reverse signs. However, we notice that this time, students who are in a romantic relationship (coloured green) tend to have a LOWER score instead. The interpretation is similar to above, with the Math scores.
+
+From this, we will investigate this possible relationship further using t-tests.
+
+## ANOVA
+
+We use ANOVA to test the effect of categorical variables on the student's final year score for both groups. In this project, we will avoid doing multiple factor ANOVAs due to the arbitrary nature of selecting the factor orders. In each of these cases, we consider one variable at a time.
+
+###Parent's Education
+```{r}
+Edu.aov<-aov(mat_ds$G3 ~ mat_ds$Fedu + mat_ds$Medu)
+summary(Edu.aov)
+
+Edu.p.aov<-aov(por_ds$G3 ~ por_ds$Fedu + por_ds$Medu)
+summary(Edu.p.aov)
+```
+
+Here we find that Parent's education does have an impact on the student's final grade. For a more visual interpretation, we examine the box plots. In particular, we will look at the boxplot for Parent's education and its impact on Math grades
+
+```{r}
+ggplot(data=mat_ds,aes(factor(Medu),G3))+geom_boxplot()
+ggplot(data=mat_ds,aes(factor(Fedu),G3))+geom_boxplot()
+
+```
+
+We note a rather surprising result. We find that for a student whose parent's have 0 education, they tend to have a higher inter-quartile range than others. A possible explanation for this phenomenon is that we have a bias of sorts. Perhaps for students with uneducated parents (particular 0), they might have received scholarships or other incentives that encourage good grades.
+
+```{r}
+
+ggplot(data=por_ds,aes(factor(Medu),G3))+geom_boxplot()
+ggplot(data=por_ds,aes(factor(Fedu),G3))+geom_boxplot()
+```
+
+Interestingly enough, while we find that parent's education is a factor that explains grades, we do not see the same effect of uneducated parents as in the case of Math.
+
+### Alchohol consumption
+```{r}
+Alc.aov<-aov(mat_ds$G3 ~ as.factor(mat_ds$Walc) + as.factor(mat_ds$Dalc))
+summary(Alc.aov)
+
+Alc.p.aov<-aov(por_ds$G3 ~ as.factor(por_ds$Walc) + as.factor(por_ds$Dalc))
+summary(Alc.p.aov)
+```
+
+When we look at alchohol consumption, again we find an interesting result. While the consumption of alchohol does not seem to have a significant effect on Math grades, it does have an impact on portugese grades.
+
+
+```{r}
+Job.aov<-aov(mat_ds$G3 ~ mat_ds$Mjob + mat_ds$Fjob)
+summary(Job.aov)
+
+Job.p.aov<-aov(por_ds$G3 ~ por_ds$Mjob + por_ds$Fjob)
+summary(Job.p.aov)
+
+```
+
+Looking at jobs, we find that Mother's job has a significant effect on both Math and Portugese grades, but Father's education is insignificant in both cases. In fact, with a p-value of 0.5 for the portugese results, we can very safely conclude that the effect is insignificant.
+
+Further on in the report, we will look at linear models to determine the magnitude of this effect.
 
 ## Linear Models
 ```{r}
