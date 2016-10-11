@@ -74,14 +74,77 @@ G3  | Final Grade  | Numeric: from 1 to 20
 
 ## Convert Factors to Numeric
 ```{r}
+por_ds$observationID <- seq.int(nrow(por_ds))
+
 por_ds$schoolD <- por_ds$school
-levels(por_ds$schoolD) <- c(0, 1)
+levels(por_ds$schoolD) <- c(0, 1) # 0 is GP, 1 is MS
 por_ds$schoolD <- as.numeric(as.character(por_ds$schoolD))
 
 por_ds$sexD <- por_ds$sex
-levels(por_ds$sexD) <- c(0, 1)
+levels(por_ds$sexD) <- c(0, 1) #0 is female, 1 is male
 por_ds$sexD <- as.numeric(as.character(por_ds$sexD))
 
+por_ds$addressD <- por_ds$address
+levels(por_ds$addressD) <- c(0, 1) #0 is urban, 1 is rural
+por_ds$addressD <- as.numeric(as.character(por_ds$addressD))
+
+por_ds$famsizeD <- por_ds$famsize
+levels(por_ds$famsizeD) <- c(0, 1) #0 is less than 3, 1 is greater than 3
+por_ds$famsizeD <- as.numeric(as.character(por_ds$famsizeD))
+
+por_ds$PstatusD <- por_ds$Pstatus
+levels(por_ds$PstatusD) <- c(0, 1) #0 is together, 1 is apart
+por_ds$PstatusD <- as.numeric(as.character(por_ds$PstatusD))
+
+por_ds$schoolsupD <- por_ds$schoolsup
+levels(por_ds$schoolsupD) <- c(0, 1)
+por_ds$schoolsupD <- as.numeric(as.character(por_ds$schoolsupD))
+
+por_ds$nurseryD <- por_ds$nursery
+levels(por_ds$nurseryD) <- c(0, 1) #0 is yes, 1 is no
+por_ds$nurseryD <- as.numeric(as.character(por_ds$nurseryD))
+
+por_ds$activitiesD <- por_ds$activities
+levels(por_ds$activitiesD) <- c(0, 1) #0 is female, 1 is male
+por_ds$activitiesD <- as.numeric(as.character(por_ds$activitiesD))
+
+por_ds$higherD <- por_ds$higher
+levels(por_ds$higherD) <- c(0, 1) #0 is female, 1 is male
+por_ds$higherD <- as.numeric(as.character(por_ds$higherD))
+
+por_ds$romanticD <- por_ds$romantic
+levels(por_ds$romanticD) <- c(0, 1) #0 is female, 1 is male
+por_ds$romanticD <- as.numeric(as.character(por_ds$romanticD))
+
+por_ds$famsupD <- por_ds$famsup
+levels(por_ds$famsupD) <- c(0, 1) #0 is female, 1 is male
+por_ds$famsupD <- as.numeric(as.character(por_ds$famsupD))
+
+por_ds$paidD <- por_ds$paid
+levels(por_ds$paidD) <- c(0, 1) #0 is female, 1 is male
+por_ds$paidD <- as.numeric(as.character(por_ds$paidD))
+
+por_ds$internetD <- por_ds$internet
+levels(por_ds$internetD) <- c(0, 1) #0 is female, 1 is male
+por_ds$internetD <- as.numeric(as.character(por_ds$internetD))
+
+
+mjob <- factor(por_ds$Mjob)
+mjobD <- data.frame(model.matrix(~mjob-1))
+mjobD$observationID <- seq.int(nrow(mjobD))
+fjob <- factor(por_ds$Fjob)
+fjobD <- data.frame(model.matrix(~fjob-1))
+fjobD$observationID <- seq.int(nrow(fjobD))
+reason <- factor(por_ds$reason)
+reasonD <- data.frame(model.matrix(~reason-1))
+reasonD$observationID <- seq.int(nrow(reasonD))
+guardian <- factor(por_ds$guardian)
+guardianD <- data.frame(model.matrix(~guardian-1))
+guardianD$observationID <- seq.int(nrow(guardianD))
+por_ds <- merge(por_ds, mjobD, by = "observationID")
+por_ds <- merge(por_ds, fjobD, by = "observationID")
+por_ds <- merge(por_ds, reasonD, by = "observationID")
+por_ds <- merge(por_ds, guardianD, by = "observationID")
 
 ```
 
@@ -116,51 +179,29 @@ m_grade <- mean(student_ds[student_ds[,"sex"] == "M", "G3"])
 
 ## Correlations
 
-You'll need the package GGally for this
-
 ```{r}
-nonFactors<- c(3,7,8,13,14,15,24,25,26,27,28,29,30,31,32,33) #List of nonfactor columns
-pairs(mat_ds[,c(30,31,32,33)],col=mat_ds$Fedu)
-
-mat_ds.sub<-as.data.frame(mat_ds[,c(30,31,32,33,7,8)])
-#ggpairs(mat_ds.sub)
-
 correlations <- cor(por_ds[,unlist(lapply(por_ds, is.numeric))])
-
+correlations
 melted_cormat <- melt(correlations)
 melted_cormat
-ggplot(melted_cormat, aes(x = X1, y = X2, fill = value)) + geom_tile()
-```
+ggplot(melted_cormat, aes(x = X1, y = X2, fill = value)) + geom_tile() + scale_fill_gradient(low = 'white', high = 'red')
 
-## All pairwise correlations
-
-```{r}
-cor.vec<-matrix(nrow=dim(mat_ds)[2],ncol=dim(mat_ds)[2])
-for (i in 1:dim(mat_ds)[2]) {
-  for (j in 1:dim(mat_ds)[2]) {
-    if (i != j) {
-      cor.vec[i,j] <- as.numeric(try(cor(mat_ds[,i],mat_ds[,j]),silent=TRUE)) 
-    }
-  }
-}
-
-which(abs(cor.vec) > 0.4, arr.ind=TRUE)
-
+highly_correlated <- melted_cormat[melted_cormat$value > .3, ]
+highly_correlated <- highly_correlated[highly_correlated$value < 1 , ]
+highly_correlated #list of all correlations above .3
 ```
 
 ##Paired t-tests
 
 ```{r}
-mat_ds$avgScore<-rowMeans(cbind(mat_ds$G1,mat_ds$G2,mat_ds$G3))
+t.test(mat_ds$G1,mat_ds$G2,paired=TRUE) #Checking for improvement in score
+t.test(por_ds$G1,por_ds$G2,paired=TRUE) 
 
-mat_ds$scoreDiff2<-mat_ds$G3-mat_ds$G2
-mat_ds$scoreDiff1<-mat_ds$G2-mat_ds$G1
+#Checks that scores increase similarly across tests (Difference in score between G2 and G1)
+mat_ds$scoreDiff1<-mat_ds$G2 - mat_ds$G1
+por_ds$scoreDiff1<-por_ds$G2 - por_ds$G1
+t.test(mat_ds$scoreDiff1,mat_ds$scoreDiff1)
 
-por_ds$scoreDiff2<-por_ds$G3-por_ds$G2
-por_ds$scoreDiff1<-por_ds$G2-por_ds$G1
-
-t.test(mat_ds$G1,mat_ds$G2,paired=TRUE)
-t.test(por_ds$G1,por_ds$G2,paired=TRUE)
 
 #do a t.test between male and female grades.
 # t.test between the two schoools. 
@@ -174,33 +215,209 @@ prop.test(table(student_ds$romantic, student_ds$sex), correct = FALSE)
 
 
 ```
+
+## $\chi^2$ Tests
+
+The aim of this section is to test independency between variables.
+```{r}
+## Independency of gender on willingness to pursue higher education
+# Gender influences the desire for a student on whether or not to pursue a higher degree education. This could due to socially perceived roles of gender in the society. 
+
+# p-value = 0.005565
+gender_higher <- table(mat_ds$sex, mat_ds$higher)
+chisq.test (gender_higher)
+
+## Independence of gender on failure rates.
+# Gender was shown not to have an impact on the exam failure rates. 
+
+# P-value = 0.3169
+gender_failure <- table(mat_ds$sex, mat_ds$failures)
+chisq.test (gender_failure)
+
+## Independence of gender on studytime.
+# The result below showed that there is a dependency between study times and gender. This gender gap could be that boys tend to spend less time studying compared to girls and girls feel anxiety from school work more easily and have better disipline at home. Ref: https://www.thestar.com/yourtoronto/education/2015/03/05/boys-do-less-homework-than-girls-global-study-finds.html
+
+#P-value = 5.854*10^-11
+gender_st <- table(mat_ds$sex, mat_ds$studytime)
+chisq.test (gender_st)
+
+
+## Independence of going out frequency on alcohol consumption.
+# A student's alcohol consumption is linked with his/her going out frequency. A person normally tends to drink more as his/her frequency of going out increases. 
+
+#P-value = 3.571*10^-5
+goout_Dalc <- table(mat_ds$goout, mat_ds$Dalc)
+chisq.test(goout_Dalc)
+
+# P-value =  2.2*10^-16
+goout_walc <- table(mat_ds$goout, mat_ds$Walc)
+chisq.test(goout_walc)
+
+## Independence of free time on going out frequency.
+# Going out frequency is dependent on the amount of free time a student has. Generally speaking, the more free time a person has, the more often this person hangs out with friends or socialises with people.
+# P-value = 1.156*10^-10 
+freetime_goout <- table( mat_ds$freetime, mat_ds$goout)
+chisq.test(freetime_goout)
+
+## Independence of parents' jobs on the paid activities a student take.
+# Paid activities are dependent on mother's jobs but independent of father's jobs. The reason being could be that mothers are naturally more devoted to the children's development.
+
+#P-value = 0.01211
+Mjob_paid <- table(mat_ds$Mjob, mat_ds$paid)
+chisq.test(Mjob_paid)
+
+#P-value = 0.4754
+Fjob_paid <- table(mat_ds$Fjob, mat_ds$paid)
+chisq.test(Fjob_paid)
+
+## Independence of paid activities on failure rates.
+# Whether or not a student takes extra paid classes affects his/her exam failure rate. The more extra paid classes a student receives, the better scores he/she achieves and the less chance of failing an exam.
+
+# P-value = 0.0003407
+paid_failure <- table(mat_ds$failures, mat_ds$paid)
+chisq.test(paid_failure)
+
+## Independence of parents' education on a student's desire to pursue higher education. 
+# It was found that higher education is associated with parents' education backgrounds. This could be explained by the fact that parents' education levels dictate their expectations of their offsprings. Students generally take their parents as their role models and pursue the same or if not higher education as compared to their parents.
+Medu_higher <- table(mat_ds$Medu, mat_ds$higher)
+chisq.test(Medu_higher)
+
+# P-value = 0.006636
+Fedu_higher <- table(mat_ds$Fedu, mat_ds$higher)
+chisq.test(Fedu_higher)
+
+## Independence of acohol consumption on health.
+# The chi-square results showed that a student's health is independent of his/her acohol consumption. This surprising result could be due to the fact that the samples were taken from young students age 16 to 18. The long term effects from acohol on health was not yet shown.
+
+# P-value = 0.1564
+acohol_health <- table(mat_ds$Dalc, mat_ds$health)
+chisq.test(acohol_health)
+
+# p-value = 0.2894
+walc_health <- table(mat_ds$Walc, mat_ds$health)
+chisq.test(walc_health)
+
+## Independence of guardian on health.
+# The result below showed that a student's guardian influences his/her health. Possible explainations could be that mothers for example can care for their children's health better than others due to mothers' nurturing nature.
+
+# P-value = 0.004591
+guardian_health <- table(mat_ds$guardian, mat_ds$health)
+chisq.test(guardian_health)
+
+## Independence of traveltime on failure rates.
+# Travel time to school was proved to have an effect on a student's failure rate. This could be due to the fact that longer travelling time to school may cause lateness or poorer concentration in class which would in turn affect a student's academic performance. 
+
+# P-value = 0.01211
+traveltime_failure <- table(mat_ds$failures, mat_ds$traveltime)
+chisq.test (traveltime_failure)
+
+## Independence of romantic relationships on study time.
+# The results suggested that being in a romantic relationship can affect the amount of time a student spend on studying. This might be due to the fact that Students in a relationship are more likely to be distracted from school work or lose intersts in class. 
+# P-value = 0.01368
+romantic_studytime <- table(mat_ds$romantic, mat_ds$studytime)
+chisq.test(romantic_studytime)
+
+## Independence of romantic relationships on failure rates.
+# Wether or not a student's involvement in a romantic relationship was shown to an impact on his/her academic achievement/failure rates. This could be because being in a romatic relationship could lead to spending less time in studying or lose focus in school work and hence underachievement in exams.
+
+# P-value = 0.02365
+romantic_failure <- table(mat_ds$romantic, mat_ds$failures)
+chisq.test(romantic_failure)
+
+```
+
+
 Difference in score for mat_ds(math) is insignificant, but significant for por_ds(portugese)
 
-## Some quick ANOVA
+## Principal Component Analysis
 
-Just to explore a bit further
-
-```{r}
-Edu.aov<-aov(mat_ds$avgScore ~ mat_ds$Fedu + mat_ds$Medu)
-Alc.aov<-aov(mat_ds$avgScore ~ mat_ds$Walc + mat_ds$Dalc)
-Job.aov<-aov(mat_ds$avgScore ~ mat_ds$Mjob + mat_ds$Fjob)
-summary(aov(mat_ds$avgScore ~ factor(mat_ds$studytime)))
-ggplot(data=mat_ds,aes(factor(Mjob),G1))+geom_boxplot()
-plot(jitter(mat_ds$G1),jitter(mat_ds$G2),col=c(mat_ds$Mjob=="health")+1)
-```
-
-
-## PCA
+To explore the data from another angle, we do a Principal Component Analysis on the non-categorical data age, absences and final year score.
 
 ```{r}
-mat_ds.sub<-as.data.frame(mat_ds[,c(7,8,26,27,28,30,31,32,33)])
+mat_ds.sub<-as.data.frame(mat_ds[,c(3,30,33)])
 
-mat_ds.sub<-as.data.frame(mat_ds[,nonFactors])
 mat_ds.pca<-prcomp(mat_ds.sub,scale=TRUE,center=TRUE)
 
-pairs(as.matrix(mat_ds.sub)%*%as.matrix(mat_ds.pca$rotation)[,1:7],col=mat_ds$traveltime)
+pairs(as.matrix(mat_ds.sub)%*%as.matrix(mat_ds.pca$rotation),col=c(mat_ds$romantic)+1)
 mat_ds.pca$rotation
 ```
+
+Examining the coefficients for the first two PCAs, we see that age captures the most variability in these three variables. Note that we have scaled and centered the data, so the larger range of age has no effect.
+
+We create a plot of the three PCAs in 2 dimensions. Students in romantic relationships are coloured green, those who are not are coloured red. From looking at the plot between the first two principal components, we notice that students who are in a romantic relationship tend to have a higher score in these principal components. By looking at the breakdown of the principal components, students who have a higher age and absences have a higher score in PC1, while a high score in absences and final year score would give a high PC2.
+
+From this, we suspect that students in relationships tend to be older, and are absent more often. Notice alsom that a the final year score has a negative weight. This means that the lower the value of a student's final year score, the higher PC1 will be. We suspect that students in romantic relationships would score lower on the Math test.
+
+
+```{r}
+por_ds.sub<-as.data.frame(por_ds[,c(3,30,33)])
+
+por_ds.pca<-prcomp(por_ds.sub,scale=TRUE,center=TRUE)
+
+pairs(as.matrix(por_ds.sub)%*%as.matrix(por_ds.pca$rotation),col=c(por_ds$romantic)+1)
+por_ds.pca$rotation
+
+```
+
+For the portugese scores, we find a very similar result. Examining the coefficients of PC1, we see that it is almost the same as the first PC in the math data, albeit with reverse signs. However, we notice that this time, students who are in a romantic relationship (coloured green) tend to have a LOWER score instead. The interpretation is similar to above, with the Math scores.
+
+From this, we will investigate this possible relationship further using t-tests.
+
+## ANOVA
+
+We use ANOVA to test the effect of categorical variables on the student's final year score for both groups. In this project, we will avoid doing multiple factor ANOVAs due to the arbitrary nature of selecting the factor orders. In each of these cases, we consider one variable at a time.
+
+###Parent's Education
+```{r}
+Edu.aov<-aov(mat_ds$G3 ~ mat_ds$Fedu + mat_ds$Medu)
+summary(Edu.aov)
+
+Edu.p.aov<-aov(por_ds$G3 ~ por_ds$Fedu + por_ds$Medu)
+summary(Edu.p.aov)
+```
+
+Here we find that Parent's education does have an impact on the student's final grade. For a more visual interpretation, we examine the box plots. In particular, we will look at the boxplot for Parent's education and its impact on Math grades
+
+```{r}
+ggplot(data=mat_ds,aes(factor(Medu),G3))+geom_boxplot()
+ggplot(data=mat_ds,aes(factor(Fedu),G3))+geom_boxplot()
+
+```
+
+We note a rather surprising result. We find that for a student whose parent's have 0 education, they tend to have a higher inter-quartile range than others. A possible explanation for this phenomenon is that we have a bias of sorts. Perhaps for students with uneducated parents (particular 0), they might have received scholarships or other incentives that encourage good grades.
+
+```{r}
+
+ggplot(data=por_ds,aes(factor(Medu),G3))+geom_boxplot()
+ggplot(data=por_ds,aes(factor(Fedu),G3))+geom_boxplot()
+```
+
+Interestingly enough, while we find that parent's education is a factor that explains grades, we do not see the same effect of uneducated parents as in the case of Math.
+
+### Alchohol consumption
+```{r}
+Alc.aov<-aov(mat_ds$G3 ~ as.factor(mat_ds$Walc) + as.factor(mat_ds$Dalc))
+summary(Alc.aov)
+
+Alc.p.aov<-aov(por_ds$G3 ~ as.factor(por_ds$Walc) + as.factor(por_ds$Dalc))
+summary(Alc.p.aov)
+```
+
+When we look at alchohol consumption, again we find an interesting result. While the consumption of alchohol does not seem to have a significant effect on Math grades, it does have an impact on portugese grades.
+
+
+```{r}
+Job.aov<-aov(mat_ds$G3 ~ mat_ds$Mjob + mat_ds$Fjob)
+summary(Job.aov)
+
+Job.p.aov<-aov(por_ds$G3 ~ por_ds$Mjob + por_ds$Fjob)
+summary(Job.p.aov)
+
+```
+
+Looking at jobs, we find that Mother's job has a significant effect on both Math and Portugese grades, but Father's education is insignificant in both cases. In fact, with a p-value of 0.5 for the portugese results, we can very safely conclude that the effect is insignificant.
+
+Further on in the report, we will look at linear models to determine the magnitude of this effect.
 
 ## Linear Models
 ```{r}

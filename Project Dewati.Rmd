@@ -1,0 +1,253 @@
+---
+title: "Student Scores"
+author: "Group 4"
+date: "9 October 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load data and libraries
+```{r}
+library(ggplot2)
+library(reshape)
+library(plyr)
+mat_ds <- read.csv("data/student-mat.csv", header=TRUE)
+por_ds <- read.table("data/student-por.csv", sep=";", header=TRUE)
+
+
+```
+
+## Initial look at the dataset
+```{r}
+head(mat_ds, n = 10)
+head(por_ds, n = 10)
+```
+
+## Overarching Question
+What demographic, social, and school related variables affect test scores in a high school environment? Do these factors differ in a math versus as language class?
+
+# Dataset Description
+Source: Paulo Cortez, University of Minho, GuimarÃ£es, Portugal, http://www3.dsi.uminho.pt/pcortez
+This data samples student achievement in secondary education of two Portuguese schools. 
+The data was collected by using school reports and questionnaires. 
+Two datasets are included regarding the performance in two distinct subjects: Mathematics (mat) and Portuguese language (por). 
+The dataset contains 32 Variables. Most variables are categorical across a number of factors that attempt to predict end of the semester scores.
+
+Variable  | Description | Type | Contents 
+--------------|--------------|---------
+School      | Student's school | Binary: "GP" - Gabriel Pereira or "MS" - Mousinho da Silveira  
+Sex         | Student's sex | Binary: "F" - female or "M" - male  
+Age         | Student's age | Numeric: from 15 to 22  
+Address     | Student's home address type | Binary: "U" - urban or "R" - rural  
+Famsize     | Family size | Binary: "LE3" - less or equal to 3 or "GT3" - greater than 3  
+Pstatus     | Parent's cohabitation status | Binary: "T" - living together or "A" - apart  
+Medu        | Mother's education | Categorical: 0 - none,  1 - primary education, 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education  
+Fedu        | Father's education | Categorical: 0 - none,  1 - primary education, 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)  
+Mjob        | Mother's job | Nominal: "teacher", "health" care related, civil "services" (e.g. administrative or police), "at_home" or "other"  
+Fjob        | Father's job | Nominal: "teacher", "health" care related, civil "services" (e.g. administrative or police), "at_home" or "other"  
+Reason      | Reason to choose this school | Categorical: close to "home", school "reputation", "course" preference or "other")  
+Guardian    | Student's guardian | Categorical: "mother", "father" or "other"  
+Traveltime  | Home to school travel time | Categorical: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour  
+Studytime   | Weekly study time | Categorical: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours  
+Failures    | Number of past class failures | Categorical: n if 1<=n<3, else 4  
+Schoolsup   | Extra educational support provided by school| Binary: yes or no  
+Famsup      | Family educational support | Binary: yes or no  
+Paid        | Extra paid classes within the course subject (Math or Portuguese) | Binary: yes or no  
+Activities  | Extra-curricular activities | Binary: yes or no  
+Nursery     | Attended nursery school as a child | Binary: yes or no  
+Higher      | Students wants to attend higher education | Binary: yes or no  
+Internet    | Internet access at home | Binary: yes or no  
+Romantic    | Student pursuing romantic relationship | Binary: yes or no  
+Famrel      | Quality of family relationships | Categorical: from 1 - very bad to 5 - excellent  
+Freetime    | Free time after school | Categorical: from 1 - very low to 5 - very high  
+Goout       | Frequency of going out with friends | Categorical: from 1 - very low to 5 - very high  
+Dalc        | Workday alcohol consumption | Categorical: from 1 - very low to 5 - very high  
+Walc        | Weekend alcohol consumption | Categorical: from 1 - very low to 5 - very high  
+Health      | Current health status | Categorical : from 1 - very bad to 5 - very good  
+Absences    | Number of school absences | Numeric: from 0 to 93  
+G1  | First Period Grade | Numeric: from 1 to 20
+G2  | Second Period Grade | Numeric: from 1 to 20
+G3  | Final Grade  | Numeric: from 1 to 20
+
+## Convert Factors to Numeric
+```{r}
+por_ds$schoolD <- por_ds$school
+levels(por_ds$schoolD) <- c(0, 1)
+por_ds$schoolD <- as.numeric(as.character(por_ds$schoolD))
+
+por_ds$sexD <- por_ds$sex
+levels(por_ds$sexD) <- c(0, 1)
+por_ds$sexD <- as.numeric(as.character(por_ds$sexD))
+
+
+```
+
+
+
+## Descriptive Statistics
+```{r}
+#slice data in different ways
+
+round(prop.table(table(por_ds$sex,por_ds$school),margin = 2),2)
+
+ddply(por_ds, .(school), summarize, mean = mean(G3), sd = sd(G3))
+
+# Most of the students in this data set study at Gabriel Pereira (772 out of 1044)
+# Female Percent
+f_pct <- paste0(nrow(student_ds[student_ds[,"sex"] == "F",]) / nrow(student_ds) * 100, "%")
+# 56.6% female students
+# Male Percent
+m_pct <- paste0(nrow(student_ds[student_ds[,"sex"] == "M",]) / nrow(student_ds) * 100, "%")
+# 43.4% male students
+# Average grade of female students
+f_grade <- mean(student_ds[student_ds[,"sex"] == "F", "G3"])
+# 11.44839
+# Average grade of male students
+m_grade <- mean(student_ds[student_ds[,"sex"] == "M", "G3"])
+# 11.20309
+
+
+```
+
+
+
+## Correlations
+
+You'll need the package GGally for this
+
+```{r}
+nonFactors<- c(3,7,8,13,14,15,24,25,26,27,28,29,30,31,32,33) #List of nonfactor columns
+pairs(mat_ds[,c(30,31,32,33)],col=mat_ds$Fedu)
+
+mat_ds.sub<-as.data.frame(mat_ds[,c(30,31,32,33,7,8)])
+#ggpairs(mat_ds.sub)
+
+correlations <- cor(por_ds[,unlist(lapply(por_ds, is.numeric))])
+
+melted_cormat <- melt(correlations)
+melted_cormat
+ggplot(melted_cormat, aes(x = X1, y = X2, fill = value)) + geom_tile()
+```
+
+## All pairwise correlations
+
+```{r}
+cor.vec<-matrix(nrow=dim(mat_ds)[2],ncol=dim(mat_ds)[2])
+for (i in 1:dim(mat_ds)[2]) {
+  for (j in 1:dim(mat_ds)[2]) {
+    if (i != j) {
+      cor.vec[i,j] <- as.numeric(try(cor(mat_ds[,i],mat_ds[,j]),silent=TRUE)) 
+    }
+  }
+}
+
+which(abs(cor.vec) > 0.4, arr.ind=TRUE)
+
+```
+
+##Paired t-tests
+
+```{r}
+mat_ds$avgScore<-rowMeans(cbind(mat_ds$G1,mat_ds$G2,mat_ds$G3))
+
+mat_ds$scoreDiff2<-mat_ds$G3-mat_ds$G2
+mat_ds$scoreDiff1<-mat_ds$G2-mat_ds$G1
+
+por_ds$scoreDiff2<-por_ds$G3-por_ds$G2
+por_ds$scoreDiff1<-por_ds$G2-por_ds$G1
+
+t.test(mat_ds$G1,mat_ds$G2,paired=TRUE)
+t.test(por_ds$G1,por_ds$G2,paired=TRUE)
+
+#do a t.test between male and female grades.
+# t.test between the two schoools. 
+# Difference between female and male proportions with respect to certain characteristics
+prop.test(table(student_ds$sex, student_ds$activities), correct = FALSE)
+#prop test make sure the y/n is on the columns
+prop.test(table(student_ds$nursery, student_ds$sex), correct = FALSE)
+prop.test(table(student_ds$higher, student_ds$sex), correct = FALSE)
+prop.test(table(student_ds$internet, student_ds$sex), correct = FALSE)
+prop.test(table(student_ds$romantic, student_ds$sex), correct = FALSE)
+
+
+```
+Difference in score for mat_ds(math) is insignificant, but significant for por_ds(portugese)
+
+## Some quick ANOVA
+
+Just to explore a bit further
+
+```{r}
+Edu.aov<-aov(mat_ds$avgScore ~ mat_ds$Fedu + mat_ds$Medu)
+Alc.aov<-aov(mat_ds$avgScore ~ mat_ds$Walc + mat_ds$Dalc)
+Job.aov<-aov(mat_ds$avgScore ~ mat_ds$Mjob + mat_ds$Fjob)
+summary(aov(mat_ds$avgScore ~ factor(mat_ds$studytime)))
+ggplot(data=mat_ds,aes(factor(Mjob),G1))+geom_boxplot()
+plot(jitter(mat_ds$G1),jitter(mat_ds$G2),col=c(mat_ds$Mjob=="health")+1)
+```
+
+
+## PCA
+
+```{r}
+mat_ds.sub<-as.data.frame(mat_ds[,c(7,8,26,27,28,30,31,32,33)])
+
+mat_ds.sub<-as.data.frame(mat_ds[,nonFactors])
+mat_ds.pca<-prcomp(mat_ds.sub,scale=TRUE,center=TRUE)
+
+pairs(as.matrix(mat_ds.sub)%*%as.matrix(mat_ds.pca$rotation)[,1:7],col=mat_ds$traveltime)
+mat_ds.pca$rotation
+```
+
+## Linear Models
+```{r}
+# questions to ask. does mom or dad's education status and/or job affect scores more
+# looks like having a romantic interest distracts students from studying
+# also looks like urban students do better than rural ones
+# one of the schools does way better than the other? can we find out how much of that school variation is due to the school vs other characteristics
+
+# MA model
+# Negative relationships
+summary(lm(formula = student_ds$G3 ~ student_ds$health, data = student_ds))
+# p-value: 0.00964 , slope: -0.21723
+summary(lm(formula = student_ds$G3 ~ student_ds$Walc, data = student_ds))
+# p-value: 0.000178 , slope: -0.34807
+summary(lm(formula = student_ds$G3 ~ student_ds$Dalc, data = student_ds))
+# p-value: 2.65e-05 , slope: -0.5496
+summary(lm(formula = student_ds$G3 ~ student_ds$goout, data = student_ds))
+# p-value: 0.00154 , slope: -0.3282
+summary(lm(formula = student_ds$G3 ~ student_ds$freetime, data = student_ds))
+# p-value: 0.0361 , slope: -0.2431
+summary(lm(formula = student_ds$G3 ~ student_ds$romantic, data = student_ds))
+# p-value: 0.00146 , slope: -0.7939
+summary(lm(formula = student_ds$G3 ~ student_ds$traveltime, data = student_ds))
+# p-value: 0.000898 , slope: -0.5421
+
+# Positive relationships
+summary(lm(formula = student_ds$G3 ~ student_ds$internet, data = student_ds))
+# p-value: 0.0005299 , slope: 1.0192
+summary(lm(formula = student_ds$G3 ~ student_ds$higher, data = student_ds))
+# p-value: 9.55e-15 , slope: 3.2726
+summary(lm(formula = student_ds$G3 ~ student_ds$studytime, data = student_ds))
+# p-value: 1.52e-07 , slope: 0.7487
+summary(lm(formula = student_ds$G3 ~ student_ds$Fjob, data = student_ds))
+# p-value: 0.007 , slope: 1.8454 (Fjobteacher)
+summary(lm(formula = student_ds$G3 ~ student_ds$Mjob, data = student_ds))
+# p-value: 1.16e-05 , slope: 2.2139 (Mjobhealth)
+# p-value: 0.00126 , slope: 1.1920 (Mjobservices)
+# p-value: 6.21e-05 , slope: 1.7386 (Mjobteacher)
+summary(lm(formula = student_ds$G3 ~ student_ds$Fedu, data = student_ds))
+# p-value: 2.1e-07 , slope: 0.5615
+summary(lm(formula = student_ds$G3 ~ student_ds$Medu, data = student_ds))
+# p-value: 5.05e-11 , slope: 0.6922
+
+# should we convert categorical variables to factors?
+mopor_ds <- lm(formula = student_ds$G3 ~ student_ds$higher + student_ds$studytime + 
+             student_ds$Mjob + student_ds$Fedu + student_ds$Medu + student_ds$Walc + 
+             student_ds$Dalc + student_ds$traveltime, data = student_ds)
+summary(mopor_ds)
+#final thing is how does the model for G3 differ between math and portuguese
+```
